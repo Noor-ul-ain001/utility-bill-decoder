@@ -36,7 +36,8 @@ _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
 app = FastAPI(title="Utility Bill Decoder API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    # Local dev server plus the deployed frontend (which talks to a locally running backend).
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "https://utility-bill-decoder.vercel.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
