@@ -1,7 +1,8 @@
 """Build submission.zip and verify it against the WTQ submission checklist.
 
 Usage (from the project root):
-    python make_zip.py
+    python make_zip.py                    # writes submission.zip
+    python make_zip.py my-submission.zip  # custom name (e.g. if the old ZIP is open elsewhere)
 
 Layout produced (GUIDE section 7):
     output/level1.csv, output/level2.csv, source/..., demo/... (if present)
@@ -17,7 +18,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-ZIP_PATH = ROOT / "submission.zip"
+ZIP_PATH = ROOT / (sys.argv[1] if len(sys.argv) > 1 else "submission.zip")
 MAX_BYTES = 15 * 1024 * 1024
 EXPECTED_ROWS = {"level1.csv": 10, "level2.csv": 120}
 LEVEL1_KEYS = [

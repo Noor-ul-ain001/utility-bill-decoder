@@ -33,3 +33,6 @@ output_backup/
 # Local env files written by tools such as `vercel link`
 .env.local
 .env*.local
+
+# Large local video backups (the compressed demo/demo.mp4 is committed)
+demo_original_backup.mp4
