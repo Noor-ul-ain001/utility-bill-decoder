@@ -7,12 +7,17 @@ Run:  uvicorn api:app --reload --port 8000   (from the source/ folder)
 from __future__ import annotations
 
 import logging
+import shutil
+import sys
 import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+# Serverless runtimes may start from another working directory; make sibling modules importable.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from fastapi import FastAPI, File, HTTPException, UploadFile  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -31,6 +36,14 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(messag
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 SAMPLE_DIRS: dict[str, Path] = {"train": config.DEFAULT_TRAIN_BILLS, "test": config.DEFAULT_TEST_BILLS}
 CACHE_DIR = config.DEFAULT_OUTPUT / "cache"
+
+# When output goes to a writable location such as /tmp, seed it with the bundled cache so
+# the sample bills decode instantly instead of spending model quota.
+if config.DEFAULT_OUTPUT != config.BUNDLED_OUTPUT and (config.BUNDLED_OUTPUT / "cache").is_dir():
+    try:
+        shutil.copytree(config.BUNDLED_OUTPUT / "cache", CACHE_DIR, dirs_exist_ok=True)
+    except OSError as exc:
+        log.warning("Could not seed the cache: %s", exc)
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
 
 app = FastAPI(title="Utility Bill Decoder API", version="1.0.0")
@@ -49,8 +62,8 @@ app.add_middleware(
 @dataclass
 class StoredBill:
     extraction: extractor.Extraction
-    image: bytes
-    mime_type: str
+    image: bytes | None
+    mime_type: str | None
 
     def context(self) -> answerer.BillContext:
         e = self.extraction
@@ -176,10 +189,36 @@ def extract_sample(body: SampleRequest) -> dict:
     return _extract(path.read_bytes(), _MIME.get(path.suffix.lower(), "image/png"), path.stem)
 
 
+def _recover(bill_key: str) -> StoredBill | None:
+    """Rebuild a bill from the on-disk cache when this server instance has not seen it.
+
+    Serverless hosts may route a question to a fresh instance; sample bills get their
+    image back, uploaded bills are answered from the cached reading alone.
+    """
+    for cache_file in CACHE_DIR.rglob("*.json"):
+        if cache_file.name.endswith(".answers.json"):
+            continue
+        bill_id = cache_file.stem if cache_file.parent == CACHE_DIR else ""
+        extraction = pipeline.load_cached_extraction(cache_file, bill_key, bill_id)
+        if extraction is None:
+            continue
+        image, mime = None, None
+        sample = next((s["path"] for s in _list_samples() if s["path"].stem == bill_id), None)
+        if sample is not None:
+            image, mime = sample.read_bytes(), _MIME.get(sample.suffix.lower())
+        stored = StoredBill(extraction, image, mime)
+        with _bills_lock:
+            _bills[bill_key] = stored
+        return stored
+    return None
+
+
 @app.post("/api/ask")
 def ask(body: AskRequest) -> dict:
     with _bills_lock:
         stored = _bills.get(body.bill_key)
+    if stored is None:
+        stored = _recover(body.bill_key)
     if stored is None:
         raise HTTPException(400, "Unknown bill. Please decode the bill again.")
     try:

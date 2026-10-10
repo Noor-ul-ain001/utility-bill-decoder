@@ -27,3 +27,9 @@ output/*
 output_dev/
 output_backup/
 *.log
+
+.vercel
+
+# Local env files written by tools such as `vercel link`
+.env.local
+.env*.local

@@ -1,0 +1,18 @@
+# Backend deployment (utility-bill-decoder-api): upload only the Python app and its data.
+.venv
+**/__pycache__
+**/.pytest_cache
+**/node_modules
+source/web
+source/tests
+source/.env
+output_dev
+output_backup
+output/*.csv
+output/*.log
+output/*.json
+demo
+*.zip
+*.log
+req.md
+ui.md

@@ -36,7 +36,10 @@ ANSWER_WITH_IMAGE: bool = os.getenv("ANSWER_WITH_IMAGE", "true").strip().lower()
 DEFAULT_TRAIN_BILLS: Path = PROJECT_ROOT / "train" / "bills"
 DEFAULT_TEST_BILLS: Path = PROJECT_ROOT / "test" / "bills"
 DEFAULT_TEST_CSV: Path = PROJECT_ROOT / "test" / "csv"
-DEFAULT_OUTPUT: Path = PROJECT_ROOT / "output"
+# Where CSVs and the cache are written. Serverless hosts (e.g. Vercel) only allow /tmp,
+# so this can be overridden with OUTPUT_DIR; the bundled project output/ is then read-only.
+BUNDLED_OUTPUT: Path = PROJECT_ROOT / "output"
+DEFAULT_OUTPUT: Path = Path(os.getenv("OUTPUT_DIR") or BUNDLED_OUTPUT)
 IMAGE_EXTENSIONS: tuple[str, ...] = (".png", ".jpg", ".jpeg")
 
 # --- Domain constants (GUIDE sections 5.1 / 5.4) -----------------------------

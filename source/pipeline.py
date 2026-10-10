@@ -119,6 +119,14 @@ def load_cached_extraction(cache_file: Path, image_hash: str, bill_id: str) -> e
 
 
 def save_extraction(cache_file: Path, image_hash: str, extraction: extractor.Extraction) -> None:
+    """Best effort: a cache that cannot be written (read-only disk) never fails the request."""
+    try:
+        _write_extraction(cache_file, image_hash, extraction)
+    except OSError as exc:
+        log.warning("Could not write cache %s: %s", cache_file, exc)
+
+
+def _write_extraction(cache_file: Path, image_hash: str, extraction: extractor.Extraction) -> None:
     _save_json(cache_file, {
         "identity": _cache_identity(),
         "image_sha256": image_hash,

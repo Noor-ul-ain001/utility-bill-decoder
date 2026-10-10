@@ -83,6 +83,24 @@ The UI has three views:
 
 The layout is responsive from wide desktops down to very narrow phones (about 210 px).
 
+## Live deployment
+
+- **Web app:** https://utility-bill-decoder.vercel.app
+- **API:** https://utility-bill-decoder-api.vercel.app (try [`/api/health`](https://utility-bill-decoder-api.vercel.app/api/health))
+
+The backend is deployed from the project root with `vercel.json` (Vercel Python runtime, entry `source/api.py`,
+bundling the sample bills and the extraction cache). Environment variables on Vercel: `MODEL_PROVIDER`,
+`MODEL_NAME`, `API_KEY` (encrypted) and `OUTPUT_DIR=/tmp/output`, because serverless functions can only write
+to `/tmp`. The frontend is deployed from `source/web`; production builds read `VITE_API_URL` from
+`web/.env.production`.
+
+## Tests
+
+```bash
+pip install -r source/requirements-dev.txt
+cd source && python -m pytest tests -q
+```
+
 ## Architecture
 
 ```
@@ -146,7 +164,7 @@ bill image + bill data + stats + 12 questions ───────────�
 |---|---|
 | Models | Gemini `gemini-3.5-flash-lite` (via `MODEL_NAME`) |
 | APIs | Google Gemini API (official `google-genai` Python SDK) |
-| Services | none |
+| Services | Vercel (hosting of the demo UI and API only; not used to produce the CSVs) |
 | Local OCR | none |
 | AI coding tools | Claude Code (Claude) |
 

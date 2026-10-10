@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "source/api.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "source/*.py",
+          "train/bills/**",
+          "train/csv/**",
+          "test/bills/**",
+          "test/csv/**",
+          "output/cache/**"
+        ]
+      }
+    }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "source/api.py" }]
+}
