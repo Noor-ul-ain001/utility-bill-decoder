@@ -1,0 +1,29 @@
+# Secrets
+.env
+*.env
+!.env.example
+
+# Python / Node build artefacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+source/web/dist/
+.vercel/
+
+# Competition data and documents (not ours to redistribute)
+train/
+test/
+req.md
+ui.md
+*.zip
+
+# Run artefacts (keep only the two result CSVs)
+output/*
+!output/level1.csv
+!output/level2.csv
+output_dev/
+output_backup/
+*.log

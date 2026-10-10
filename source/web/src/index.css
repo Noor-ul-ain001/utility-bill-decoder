@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+/* Design tokens from the reference dashboard: grey canvas, light shell,
+   white rounded cards, lime highlight and deep forest-green actions. */
+@theme {
+  --font-sans: "Urbanist", ui-sans-serif, system-ui, sans-serif;
+
+  /* Extra-small breakpoint so very narrow phones (down to ~210px) get single-column layouts. */
+  --breakpoint-xs: 25rem;
+
+  --color-canvas: #d9d9d7;
+  --color-shell: #f2f2f0;
+  --color-card: #ffffff;
+  --color-line: #ececea;
+  --color-ink: #141414;
+  --color-muted: #8b8b88;
+
+  --color-lime: #b7ec7c;
+  --color-lime-soft: #d8f5b6;
+  --color-lime-pale: #eefbe0;
+  --color-forest: #1f3d17;
+  --color-forest-dark: #142a0e;
+
+  --color-up: #2f9e44;
+  --color-down: #e5484d;
+  --color-down-soft: #fdecec;
+  --color-warn: #f26b3a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-canvas text-ink font-sans antialiased;
+  /* Break long words (file names, labels) only when they cannot fit on a line. */
+  overflow-wrap: break-word;
+}
+
+/* Horizontal scrollers (tabs, charts) stay swipeable without a visible scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  @apply min-w-0 rounded-[22px] bg-card p-4 sm:rounded-[28px] sm:p-6;
+}
+
+.label {
+  @apply text-sm font-medium text-muted;
+}
+
+.icon-chip {
+  @apply grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line bg-card text-ink;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-forest px-4 py-2.5 sm:px-5 text-sm font-semibold text-lime transition hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-forest/80 bg-card px-4 py-2.5 sm:px-5 text-sm font-semibold text-forest transition hover:bg-lime-pale disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.pill {
+  @apply inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-card px-3 py-1 text-xs font-semibold;
+}
+
+.input {
+  @apply w-full min-w-0 rounded-full border border-line bg-shell px-4 py-2.5 text-sm outline-none transition placeholder:text-muted focus:border-forest/40 focus:bg-white focus:ring-4 focus:ring-lime-soft;
+}
+
+.amount {
+  @apply font-light tracking-tight tabular-nums;
+}
+
+/* Tailwind v4 no longer sets a pointer cursor on buttons; restore it for everything clickable. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label:has(input[type="file"]),
+  summary,
+  select {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* Gentle entrance for freshly rendered cards. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -400px 0;
+  }
+  to {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  @apply rounded-2xl;
+  background: linear-gradient(90deg, #ececea 0%, #f6f6f4 50%, #ececea 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .skeleton {
+    animation: none;
+  }
+}
